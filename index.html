@@ -16,7 +16,7 @@ html,body{margin:0;height:100%;background:#1F4666;overflow:hidden;cursor:none}
 /* painel de aeroporto (split-flap): a metade de cima cai sobre o eixo do meio e a de baixo assenta com um pequeno ressalto */
 .num{height:210px;width:226px;position:relative;perspective:900px;font:900 172px Aktiv;color:#1F4666;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .hf{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:#EEF3F7;backface-visibility:hidden}
-.hf span{position:absolute;left:0;right:0;height:210px;line-height:210px;text-align:center}
+.hf span{position:absolute;left:0;right:0;height:210px;line-height:210px;text-align:center;transform:translate(-.025em,.068em)}  /* centra a tinta dos algarismos (a caixa da letra fica alta e desviada pelo espaçamento negativo) */
 .hf.t{top:0;border-radius:16px 16px 0 0;transform-origin:50% 100%} .hf.b{bottom:0;border-radius:0 0 16px 16px;transform-origin:50% 0;background:#E6EDF3}
 .hf.b span{top:-105px}
 .hf::after{content:"";position:absolute;inset:0;background:#1F4666;opacity:0;pointer-events:none}

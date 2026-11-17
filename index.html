@@ -7,7 +7,7 @@ html,body{margin:0;height:100%;background:#1F4666;overflow:hidden;cursor:none} b
 #fs{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:9;width:52px;height:52px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 250ms cubic-bezier(.22,1,.36,1),background-color 150ms ease-out;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 body.mv #fs{opacity:1;pointer-events:auto} #fs:hover{background:rgba(255,255,255,.26)} #fs svg{width:24px;height:24px} #fs .ex{display:none}
 body.isfs #fs .en{display:none} body.isfs #fs .ex{display:block} body.nofs #fs,body.kiosk #fs{display:none}
-#st{position:absolute;left:0;top:0;width:1920px;height:1080px;background:#1F4666;overflow:hidden;transform-origin:0 0}
+#st{position:fixed;left:0;top:0;width:1920px;height:1080px;background:#1F4666;overflow:hidden;transform-origin:0 0}
 #pt i{position:absolute;border-radius:50%;background:#58D7E8;opacity:.25;animation:fl linear infinite}
 @keyframes fl{from{transform:translateY(0)}to{transform:translateY(-1200px)}}
 #rg{position:absolute;left:-450px;top:-450px;width:900px;height:900px;animation:rot 60s linear infinite,in .9s cubic-bezier(.3,1.5,.5,1) both}
@@ -70,9 +70,9 @@ body.p .ty{font-size:210px} body.p .sc2{font-size:58px;padding-left:20px}
 <script>
 const st=document.getElementById('st');
 const LY=new URLSearchParams(location.search).get('layout');
-function fit(){const p=LY?LY==='portrait':innerHeight>innerWidth;document.body.classList.toggle('p',p);const W=p?1080:1920,H=p?1920:1080;
+function fit(){const vw=document.documentElement.clientWidth,vh=document.documentElement.clientHeight;const p=LY?LY==='portrait':vh>vw;document.body.classList.toggle('p',p);const W=p?1080:1920,H=p?1920:1080;
   // o palco estica até às bordas do ecrã (sem barras), mantendo a escala do lado mais curto
-  const k=Math.min(innerWidth/W,innerHeight/H);st.style.width=innerWidth/k+'px';st.style.height=innerHeight/k+'px';st.style.transform=`scale(${k})`;}
+  const k=Math.min(vw/W,vh/H);st.style.width=vw/k+'px';st.style.height=vh/k+'px';st.style.transform=`scale(${k})`;}
 addEventListener('resize',fit);fit();
 // ecrã inteiro: botão, duplo clique ou tecla F; ?kiosk esconde o botão (leitores que já abrem em ecrã inteiro)
 const de=document.documentElement,B=document.body,fsBtn=document.getElementById('fs');

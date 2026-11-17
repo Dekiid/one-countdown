@@ -63,7 +63,7 @@ body.p .ty{font-size:210px} body.p .sc2{font-size:58px;padding-left:20px}
   <div class="h up" style="animation-delay:.35s">Time left to have your say</div>
   <div class="tiles up" style="animation-delay:.5s"><div class="tile"><div class="num" id="d"></div><div class="lab">DAYS</div></div><div class="tile"><div class="num" id="h"></div><div class="lab">HOURS</div></div><div class="tile"><div class="num" id="m"></div><div class="lab">MINUTES</div></div><div class="tile"><div class="num" id="s"></div><div class="lab">SECONDS</div></div></div>
   <div class="ln up" style="animation-delay:.7s">Confidential · about 10 minutes · on your computer</div>
-  <div class="cta up" style="animation-delay:.85s"><i></i><i></i><b>Respond by 30 November</b></div>
+  <div class="cta up" style="animation-delay:.85s"><i></i><i></i><b>Respond by 27 November</b></div>
  </div>
  <div class="col" id="done"><div class="ty up">Thank you.</div><div class="sc sc2 up" style="animation-delay:.3s">One Voice. One Future. One Azule Energy</div></div>
 </div>
@@ -86,7 +86,7 @@ addEventListener('dblclick',()=>fsCan&&fsToggle());
 addEventListener('keydown',e=>{if((e.key==='f'||e.key==='F')&&fsCan)fsToggle();});
 let hideT;const wake=()=>{B.classList.add('mv');clearTimeout(hideT);hideT=setTimeout(()=>B.classList.remove('mv'),3000);};
 ['mousemove','touchstart','pointerdown'].forEach(e=>addEventListener(e,wake,{passive:true}));
-const q=new URLSearchParams(location.search), END=new Date(q.get('end')||'2026-11-30T23:59:59+01:00').getTime();
+const q=new URLSearchParams(location.search), END=new Date(q.get('end')||'2026-11-27T23:59:59+01:00').getTime();
 // painel de aeroporto: metades fixas (cima = novo, baixo = antigo) e duas abas que rodam sobre o eixo do meio
 const cur={};
 const half=(c,v,x)=>`<div class="hf ${c} ${x||''}"><span>${v}</span></div>`;

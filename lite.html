@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ONE Countdown (lite)</title>
+<!--
+  Versão leve para leitores de sinalética antigos (ex.: VITEC m9305, browser Ekioh).
+  Só usa JavaScript ES3/ES5 (var, function), CSS 2.1 + border-radius, posições fixas
+  (sem flexbox/grid), letra TTF em ficheiros pequenos e imagens PNG.
+  Parâmetros: ?layout=portrait|landscape  ?end=2026-11-27T23:59:59+01:00
+-->
+<style type="text/css">
+@font-face{font-family:'AktivLite500';src:url('lite/aktiv-500.ttf') format('truetype')}
+@font-face{font-family:'AktivLite700';src:url('lite/aktiv-700.ttf') format('truetype')}
+@font-face{font-family:'AktivLite800';src:url('lite/aktiv-800.ttf') format('truetype')}
+@font-face{font-family:'AktivLite900';src:url('lite/aktiv-900.ttf') format('truetype')}
+@font-face{font-family:'KarmaLite';src:url('lite/karma-400.ttf') format('truetype')}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#1F4666;cursor:none}
+#st{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:#1F4666}
+#rg{position:absolute;left:0;top:0;width:450px;height:450px}
+#lg{position:absolute;right:110px;top:84px;width:300px;height:130px}
+#c{position:absolute;right:0;top:0;width:1920px;height:1080px}
+.t{position:absolute;right:110px;white-space:nowrap;text-align:right}
+.k{top:258px;font-family:'AktivLite700',Arial,Helvetica,sans-serif;font-weight:bold;font-size:30px;line-height:36px;letter-spacing:.22em;color:#58D7E8}
+.h{top:308px;font-family:'AktivLite800',Arial,Helvetica,sans-serif;font-weight:bold;font-size:92px;line-height:94px;letter-spacing:-.02em;color:#FFFFFF}
+.tile{position:absolute;top:446px;width:270px;height:320px;background:#FFFFFF;border-radius:26px}
+#t0{left:640px} #t1{left:940px} #t2{left:1240px} #t3{left:1540px}
+.num{position:absolute;left:22px;top:36px;width:226px;height:210px;overflow:hidden;background:#EEF3F7;border-radius:16px}
+.num .lo{position:absolute;left:0;top:105px;width:226px;height:105px;background:#E6EDF3}
+.num .ax{position:absolute;left:0;top:103px;width:226px;height:4px;background:#C9D3DC}
+.num .v{position:absolute;left:0;top:12px;width:222px;height:210px;line-height:210px;text-align:center;font-family:'AktivLite900',Arial,Helvetica,sans-serif;font-weight:bold;font-size:172px;letter-spacing:-.04em;color:#1F4666}
+.lab{position:absolute;left:0;top:252px;width:270px;height:32px;line-height:32px;text-align:center;font-family:'AktivLite700',Arial,Helvetica,sans-serif;font-weight:bold;font-size:26px;letter-spacing:.24em;color:#FF6146}
+.ln{top:806px;font-family:'AktivLite500',Arial,Helvetica,sans-serif;font-size:36px;line-height:43px;color:#DEF7FA}
+.cta{top:878px}
+.cta span{display:block;height:54px;padding:20px 46px;line-height:54px;background:#FF6146;color:#FFFFFF;border-radius:60px;font-family:'AktivLite800',Arial,Helvetica,sans-serif;font-weight:bold;font-size:44px}
+.ty{top:486px;font-family:'AktivLite800',Arial,Helvetica,sans-serif;font-weight:bold;font-size:220px;line-height:220px;letter-spacing:-.04em;color:#FFFFFF}
+.sc{top:740px;font-family:'KarmaLite',Georgia,'Times New Roman',serif;font-size:84px;line-height:84px;color:#58D7E8}
+#done{display:none}
+.over #live{display:none}
+.over #done{display:block}
+/* ecrãs na vertical: palco 1080x1920, casas em grelha 2x2 */
+.p #lg{right:80px;top:90px}
+.p #c{width:1080px;height:1920px}
+.p .t{right:80px}
+.p .k{top:370px;font-size:24px;line-height:29px;letter-spacing:.18em}
+.p .h{top:417px;width:920px;white-space:normal;font-size:112px;line-height:114px}
+.p .tile{width:446px;height:410px}
+.p #t0{left:80px;top:706px} .p #t1{left:554px;top:706px} .p #t2{left:80px;top:1144px} .p #t3{left:554px;top:1144px}
+.p .num{left:33px;top:37px;width:380px;height:290px}
+.p .num .lo{top:145px;width:380px;height:145px}
+.p .num .ax{top:143px;width:380px}
+.p .num .v{top:16px;width:375px;height:290px;line-height:290px;font-size:236px}
+.p .lab{top:337px;width:446px;height:36px;line-height:36px;font-size:30px}
+.p .ln{top:1614px;font-size:34px;line-height:46px}
+.p .cta{top:1696px;right:0;left:0;text-align:center}
+.p .cta span{display:inline-block}
+.p .ty{top:864px;width:920px;white-space:normal;font-size:210px;line-height:210px}
+.p .sc{top:1318px;font-size:58px;line-height:58px}
+</style>
+</head>
+<body>
+<div id="st">
+ <img id="rg" src="lite/ring.png" width="450" height="450" alt="">
+ <img id="lg" src="lite/logo.png" width="300" height="130" alt="Azule Energy | ONE">
+ <div id="c">
+  <div id="live">
+   <div class="t k">AZULE EMPLOYEE ENGAGEMENT SURVEY</div>
+   <div class="t h">Time left to have your say</div>
+   <div class="tile" id="t0"><div class="num"><div class="lo"></div><div class="ax"></div><div class="v" id="d">--</div></div><div class="lab">DAYS</div></div>
+   <div class="tile" id="t1"><div class="num"><div class="lo"></div><div class="ax"></div><div class="v" id="h">--</div></div><div class="lab">HOURS</div></div>
+   <div class="tile" id="t2"><div class="num"><div class="lo"></div><div class="ax"></div><div class="v" id="m">--</div></div><div class="lab">MINUTES</div></div>
+   <div class="tile" id="t3"><div class="num"><div class="lo"></div><div class="ax"></div><div class="v" id="s">--</div></div><div class="lab">SECONDS</div></div>
+   <div class="t ln">Confidential &middot; about 10 minutes &middot; on your computer</div>
+   <div class="t cta"><span>Respond by 27 November</span></div>
+  </div>
+  <div id="done">
+   <div class="t ty">Thank you.</div>
+   <div class="t sc">One Voice. One Future. One Azule Energy</div>
+  </div>
+ </div>
+</div>
+<script type="text/javascript">
+// Só ES3/ES5: sem const/let, setas, template literals, URLSearchParams, classList nem padStart.
+var END = Date.UTC(2026, 10, 27, 22, 59, 59); // 27 Nov. 2026, 23:59:59 em Luanda (UTC+1)
+var offset = 0; // diferença entre a hora do servidor e o relógio do leitor (ms)
+
+function $(id) { return document.getElementById(id); }
+function param(name) {
+  var m = new RegExp('[?&]' + name + '=([^&#]*)').exec(window.location.search || '');
+  return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null;
+}
+function hasClass(el, c) { return (' ' + el.className + ' ').indexOf(' ' + c + ' ') > -1; }
+function setClass(el, c, on) {
+  var has = hasClass(el, c);
+  if (on && !has) { el.className = (el.className ? el.className + ' ' : '') + c; }
+  if (!on && has) { el.className = (' ' + el.className + ' ').replace(' ' + c + ' ', ' ').replace(/^\s+|\s+$/g, ''); }
+}
+function now() { return new Date().getTime() + offset; }
+
+// ?end=AAAA-MM-DDTHH:MM[:SS](Z|+HH:MM|-HH:MM), lido à mão porque browsers antigos não lêem datas ISO
+(function () {
+  var e = param('end');
+  var m = e && /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(Z|([+-])(\d{2}):?(\d{2}))?$/.exec(e);
+  if (!m) { return; }
+  var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0));
+  if (m[8]) { t -= (m[8] === '-' ? -1 : 1) * ((+m[9]) * 60 + (+m[10])) * 60000; }
+  if (!isNaN(t)) { END = t; }
+})();
+
+// Escala o palco de 1920x1080 (ou 1080x1920) para o ecrã, com transform se existir, ou zoom
+var LY = param('layout');
+function fit() {
+  var de = document.documentElement, b = document.body;
+  var vw = de.clientWidth || window.innerWidth || b.clientWidth;
+  var vh = de.clientHeight || window.innerHeight || b.clientHeight;
+  if (!vw || !vh) { return; }
+  var p = LY ? LY === 'portrait' : vh > vw;
+  setClass(b, 'p', p);
+  var W = p ? 1080 : 1920, H = p ? 1920 : 1080;
+  var k = Math.min(vw / W, vh / H);
+  var sw = Math.round(vw / k), sh = Math.round(vh / k);
+  var st = $('st'), s = st.style, c = $('c').style;
+  s.width = sw + 'px'; s.height = sh + 'px';
+  c.top = Math.round((sh - H) / 2) + 'px';
+  var x = 'scale(' + k + ')', props = ['transform', 'webkitTransform', 'MozTransform', 'msTransform', 'OTransform'], done = false, i;
+  for (i = 0; i < props.length; i++) {
+    if (typeof s[props[i]] !== 'undefined') {
+      s[props[i]] = x; s[props[i] + 'Origin'] = '0 0'; done = true; break;
+    }
+  }
+  if (!done && typeof s.zoom !== 'undefined') { s.zoom = k; }
+}
+
+function two(n) { return n < 10 ? '0' + n : '' + n; }
+var shown = {};
+function put(id, v) { if (shown[id] !== v) { shown[id] = v; $(id).innerHTML = v; } }
+function tick() {
+  var r = Math.floor((END - now()) / 1000);
+  if (r < 0) { r = 0; }
+  setClass(document.body, 'over', r <= 0);
+  put('d', two(Math.floor(r / 86400)));
+  put('h', two(Math.floor((r % 86400) / 3600)));
+  put('m', two(Math.floor((r % 3600) / 60)));
+  put('s', two(r % 60));
+  setTimeout(tick, 1000 - (now() % 1000) + 20);
+}
+
+// Acerta pela hora do servidor (cabeçalho Date), porque os leitores às vezes têm o relógio errado
+function syncClock() {
+  var x;
+  try { x = new XMLHttpRequest(); } catch (e) { return; }
+  var t0 = new Date().getTime();
+  try {
+    x.open('HEAD', window.location.pathname + '?clock=' + t0, true);
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) { return; }
+      var d = x.getResponseHeader && x.getResponseHeader('Date');
+      var srv = d ? Date.parse(d) : NaN, t1 = new Date().getTime();
+      // o cabeçalho tem precisão de 1 s: +500 ms e o meio da ida e volta
+      if (!isNaN(srv)) { offset = srv + 500 - Math.round((t0 + t1) / 2); }
+    };
+    x.send(null);
+  } catch (e2) {}
+}
+
+window.onresize = fit;
+fit();
+tick();
+syncClock();
+setInterval(syncClock, 30 * 60 * 1000);
+// recarrega uma vez por dia (06:00 locais) para limpar a memória em leitores que ficam ligados semanas
+setInterval(function () {
+  var d = new Date();
+  if (d.getHours() === 6 && d.getMinutes() === 0 && navigator.onLine !== false) { window.location.reload(); }
+}, 60000);
+</script>
+</body>
+</html>

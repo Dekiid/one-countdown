@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ONE Countdown - player check</title>
+<!--
+  Página de diagnóstico para leitores de sinalética: mostra o browser, o tamanho do ecrã,
+  o relógio do leitor contra a hora do servidor, e o que o motor suporta.
+  Escrita em ES3 (var, function, try/catch em cada teste) para correr mesmo em motores muito antigos.
+-->
+<style type="text/css">
+@font-face{font-family:'ChkTTF';src:url('lite/aktiv-900.ttf') format('truetype')}
+@font-face{font-family:'ChkWOFF2';src:url('lite/check-900.woff2') format('woff2')}
+html,body{margin:0;padding:0;background:#1F4666;color:#FFFFFF;cursor:none}
+body{padding:1em 1.4em;font-family:Arial,Helvetica,sans-serif;font-size:20px;line-height:1.3em;overflow:hidden}
+h1{margin:0 0 .2em 0;font-size:1.5em;line-height:1.2em;color:#58D7E8}
+.sub{margin:0 0 .7em 0;color:#DEF7FA}
+.verdict{margin:0 0 .7em 0;padding:.5em .7em;background:#163650;border-left:6px solid #58D7E8}
+.verdict div{margin:2px 0}
+.col{float:left;width:49%;margin-right:1%}
+.sec{margin:.5em 0 .2em 0;font-weight:bold;color:#58D7E8;font-size:1.1em}
+table{border-collapse:collapse;width:100%}
+td{padding:0 .4em 0 0;vertical-align:top}
+td.l{width:42%;color:#DEF7FA}
+.ok{color:#7CF29A;font-weight:bold}
+.bad{color:#FF8A75;font-weight:bold}
+.inf{color:#FFFFFF}
+.ua{word-wrap:break-word;font-family:'Courier New',Courier,monospace;font-size:.9em}
+#probe{position:absolute;left:-9999px;top:0;visibility:hidden}
+#probe span{font-size:60px;white-space:nowrap}
+</style>
+</head>
+<body>
+<h1>ONE Countdown &mdash; player check</h1>
+<div class="sub">Please take a photo of this whole screen and send it to the content team. Results finish loading after about 5 seconds.</div>
+<div class="verdict" id="verdict"><div>Running checks&hellip;</div></div>
+<div class="col" id="c1"></div>
+<div class="col" id="c2"></div>
+<div style="clear:both;height:1px;overflow:hidden"></div>
+<div id="probe">
+ <span id="fb1" style="font-family:monospace">0123456789</span>
+ <span id="ttf" style="font-family:'ChkTTF',monospace">0123456789</span>
+ <span id="fb2" style="font-family:monospace">0123456789</span>
+ <span id="woff2" style="font-family:'ChkWOFF2',monospace">0123456789</span>
+</div>
+<script type="text/javascript">
+var CHECK_VERSION = '1';
+var R = {}; // resultados: id -> {txt, cls}
+var SECTIONS = [
+  ['c1', 'Player', ['url', 'ua', 'win', 'client', 'screen', 'dpr']],
+  ['c1', 'Clock', ['local', 'tz', 'server', 'diff']],
+  ['c1', 'Fonts', ['ttf', 'woff2']],
+  ['c2', 'JavaScript', ['es5', 'es6', 'es6class', 'es2017', 'usp', 'pad', 'promise', 'fetch', 'classlist', 'qs', 'raf', 'xhr', 'ls', 'fs']],
+  ['c2', 'CSS', ['t2d', 't3d', 'anim', 'trans', 'radius', 'opacity', 'rgba', 'flex', 'gap', 'grid', 'calc', 'indiv', 'inset', 'svg']]
+];
+var LABELS = {
+  url: 'Page address', ua: 'Browser', win: 'Window (inner)', client: 'Page viewport', screen: 'Screen', dpr: 'Pixel ratio',
+  local: 'Player clock', tz: 'Player time zone', server: 'Server time', diff: 'Clock error',
+  ttf: 'TTF web font', woff2: 'WOFF2 web font',
+  es5: 'ES5 (JSON, forEach, bind)', es6: 'ES6 syntax (const, =>, `${}`)', es6class: 'ES6 classes', es2017: 'async functions',
+  usp: 'URLSearchParams', pad: 'String padStart', promise: 'Promise', fetch: 'fetch()', classlist: 'classList',
+  qs: 'querySelector', raf: 'requestAnimationFrame', xhr: 'XMLHttpRequest', ls: 'localStorage', fs: 'Fullscreen API',
+  t2d: '2D transforms', t3d: '3D transforms', anim: 'CSS animations', trans: 'CSS transitions', radius: 'border-radius',
+  opacity: 'opacity', rgba: 'rgba() colours', flex: 'Flexbox', gap: 'Flexbox gap', grid: 'CSS Grid', calc: 'calc()',
+  indiv: 'rotate:/scale: properties', inset: 'inset:', svg: 'Inline SVG'
+};
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function set(id, txt, cls) { R[id] = { txt: txt, cls: cls || 'inf' }; }
+function yes(id, ok, extra) { set(id, (ok ? 'yes' : 'NO') + (extra ? ' (' + extra + ')' : ''), ok ? 'ok' : 'bad'); return ok; }
+function test(id, fn) { var ok = false; try { ok = !!fn(); } catch (e) { ok = false; } return yes(id, ok); }
+
+function render() {
+  var cols = { c1: '', c2: '' }, i, j, s, id, r;
+  for (i = 0; i < SECTIONS.length; i++) {
+    s = SECTIONS[i];
+    cols[s[0]] += '<div class="sec">' + esc(s[1]) + '</div><table>';
+    for (j = 0; j < s[2].length; j++) {
+      id = s[2][j]; r = R[id] || { txt: '…', cls: 'inf' };
+      cols[s[0]] += '<tr><td class="l">' + esc(LABELS[id]) + '</td><td class="' + r.cls + (id === 'ua' || id === 'url' ? ' ua' : '') + '">' + esc(r.txt) + '</td></tr>';
+    }
+    cols[s[0]] += '</table>';
+  }
+  document.getElementById('c1').innerHTML = cols.c1;
+  document.getElementById('c2').innerHTML = cols.c2;
+  fitText();
+}
+
+// Sem scroll num leitor: reduz o tamanho da letra até a página caber num só ecrã (para uma única fotografia)
+function fitText() {
+  var b = document.body, de = document.documentElement, vh = de.clientHeight || window.innerHeight, size = 20;
+  if (!vh) { return; }
+  b.style.fontSize = size + 'px';
+  while (size > 9 && Math.max(b.scrollHeight, de.scrollHeight) > vh) { size -= 1; b.style.fontSize = size + 'px'; }
+}
+
+// --- Leitor
+set('url', window.location.href);
+set('ua', navigator.userAgent || '(empty)');
+set('win', (window.innerWidth || '?') + ' x ' + (window.innerHeight || '?'));
+set('client', document.documentElement.clientWidth + ' x ' + document.documentElement.clientHeight);
+set('screen', window.screen ? screen.width + ' x ' + screen.height : '?');
+set('dpr', window.devicePixelRatio || '(not reported)');
+
+// --- Relógio
+var t0 = new Date();
+set('local', t0.toString());
+set('tz', 'UTC' + (t0.getTimezoneOffset() <= 0 ? '+' : '-') + Math.abs(t0.getTimezoneOffset() / 60));
+set('server', 'checking…');
+set('diff', 'checking…');
+function syncClock() {
+  var x;
+  try { x = new XMLHttpRequest(); } catch (e) { set('server', 'XMLHttpRequest not available', 'bad'); set('diff', 'unknown', 'bad'); render(); return; }
+  var a = new Date().getTime();
+  try {
+    x.open('HEAD', window.location.pathname + '?clock=' + a, true);
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) { return; }
+      var d = x.getResponseHeader && x.getResponseHeader('Date'), b = new Date().getTime();
+      var srv = d ? Date.parse(d) : NaN;
+      if (isNaN(srv)) { set('server', 'no Date header (status ' + x.status + ')', 'bad'); set('diff', 'unknown', 'bad'); }
+      else {
+        set('server', new Date(srv).toUTCString());
+        var err = Math.round((Math.round((a + b) / 2) - (srv + 500)) / 1000);
+        set('diff', (err > 0 ? '+' : '') + err + ' s' + (Math.abs(err) <= 5 ? ' (fine)' : ' (player clock is wrong)'), Math.abs(err) <= 5 ? 'ok' : 'bad');
+      }
+      render(); verdict();
+    };
+    x.send(null);
+  } catch (e2) { set('server', 'request failed: ' + e2.message, 'bad'); set('diff', 'unknown', 'bad'); render(); }
+}
+
+// --- JavaScript
+test('es5', function () { return window.JSON && JSON.parse('{"a":1}').a === 1 && [].forEach && Object.keys && Function.prototype.bind && ''.trim; });
+test('es6', function () { return new Function('const a = 1; let b = () => a; return `${b()}`;')() === '1'; });
+test('es6class', function () { return new Function('class A { m() { return 2; } } return new A().m();')() === 2; });
+test('es2017', function () { new Function('async function f() {} return f;'); return true; });
+test('usp', function () { return typeof URLSearchParams !== 'undefined' && new URLSearchParams('?a=1').get('a') === '1'; });
+test('pad', function () { return '1'.padStart && '1'.padStart(2, '0') === '01'; });
+test('promise', function () { return typeof Promise !== 'undefined'; });
+test('fetch', function () { return typeof window.fetch === 'function'; });
+test('classlist', function () { return !!document.body.classList; });
+test('qs', function () { return !!document.querySelector; });
+test('raf', function () { return !!(window.requestAnimationFrame || window.webkitRequestAnimationFrame); });
+test('xhr', function () { return typeof XMLHttpRequest !== 'undefined'; });
+test('ls', function () { window.localStorage.setItem('chk', '1'); window.localStorage.removeItem('chk'); return true; });
+test('fs', function () { var d = document.documentElement; return !!(d.requestFullscreen || d.webkitRequestFullscreen); });
+
+// --- CSS
+var probe = document.createElement('div');
+document.body.appendChild(probe);
+function prop(names) {
+  var s = probe.style, i, p = ['', 'webkit', 'Webkit', 'Moz', 'ms', 'O'], n, j;
+  for (i = 0; i < names.length; i++) {
+    for (j = 0; j < p.length; j++) {
+      n = p[j] ? p[j] + names[i].charAt(0).toUpperCase() + names[i].substr(1) : names[i];
+      if (typeof s[n] !== 'undefined') { return p[j] ? p[j] + ' prefix' : 'standard'; }
+    }
+  }
+  return '';
+}
+function propTest(id, names) { var r = ''; try { r = prop(names); } catch (e) {} return yes(id, !!r, r && r !== 'standard' ? r : ''); }
+function accepts(styleProp, value) { try { probe.style[styleProp] = ''; probe.style[styleProp] = value; return probe.style[styleProp] !== ''; } catch (e) { return false; } }
+propTest('t2d', ['transform']);
+propTest('t3d', ['perspective', 'backfaceVisibility']);
+propTest('anim', ['animationName']);
+propTest('trans', ['transitionProperty']);
+propTest('radius', ['borderRadius']);
+yes('opacity', typeof probe.style.opacity !== 'undefined');
+yes('rgba', accepts('color', 'rgba(1, 2, 3, 0.5)'));
+var flexOk = accepts('display', 'flex'), flexOld = !flexOk && (accepts('display', '-webkit-flex') || accepts('display', '-webkit-box'));
+yes('flex', flexOk || flexOld, flexOld ? 'old/prefixed syntax only' : '');
+test('gap', function () {
+  if (!flexOk) { return false; }
+  var c = document.createElement('div'), a = document.createElement('div'), b = document.createElement('div');
+  c.style.display = 'flex'; c.style.gap = '17px'; c.style.position = 'absolute'; c.style.visibility = 'hidden';
+  a.style.width = b.style.width = '10px'; a.style.height = b.style.height = '1px';
+  c.appendChild(a); c.appendChild(b); document.body.appendChild(c);
+  var ok = b.offsetLeft - a.offsetLeft === 27; document.body.removeChild(c); return ok;
+});
+yes('grid', accepts('display', 'grid'));
+yes('calc', accepts('width', 'calc(10px + 10px)'));
+yes('indiv', typeof probe.style.rotate !== 'undefined' && typeof probe.style.scale !== 'undefined');
+yes('inset', typeof probe.style.inset !== 'undefined');
+test('svg', function () { return !!(document.createElementNS && document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect); });
+
+// --- Letras: compara a largura do texto com a letra de recurso; se mudar, a letra web carregou
+set('ttf', 'checking…'); set('woff2', 'checking…');
+var fontTries = 0;
+function checkFonts() {
+  fontTries++;
+  var ttf = document.getElementById('ttf').offsetWidth !== document.getElementById('fb1').offsetWidth;
+  var w2 = document.getElementById('woff2').offsetWidth !== document.getElementById('fb2').offsetWidth;
+  if ((ttf && w2) || fontTries >= 10) {
+    yes('ttf', ttf); yes('woff2', w2); render(); verdict(); return;
+  }
+  setTimeout(checkFonts, 500);
+}
+
+function ok(id) { return R[id] && R[id].cls === 'ok'; }
+function verdict() {
+  var main = [], need = ['es6', 'usp', 'pad', 'flex', 'gap', 't2d'], i, lines = [];
+  for (i = 0; i < need.length; i++) { if (!ok(need[i])) { main.push(LABELS[need[i]]); } }
+  lines.push('<div><b>Main page (index.html):</b> ' + (main.length ? '<span class="bad">will not display correctly</span> &mdash; missing: ' + esc(main.join(', ')) : '<span class="ok">should work</span>') + '</div>');
+  var scale = ok('t2d') || typeof probe.style.zoom !== 'undefined';
+  lines.push('<div><b>Lite page (lite.html):</b> ' + (scale ? '<span class="ok">should work</span>' : '<span class="bad">works only on a 1920 x 1080 screen</span> (no transform or zoom to scale it)') + (ok('ttf') ? '' : ' &mdash; <span class="bad">brand font will not load (falls back to Arial)</span>') + '</div>');
+  if (R.diff && R.diff.cls === 'bad' && R.diff.txt.indexOf('wrong') > -1) { lines.push('<div><span class="bad">Player clock is wrong.</span> The lite page corrects for this using the server time; the main page does not.</div>'); }
+  lines.push('<div class="sub" style="margin:4px 0 0 0">check v' + CHECK_VERSION + ' &middot; ' + esc(new Date().toUTCString()) + '</div>');
+  document.getElementById('verdict').innerHTML = lines.join('');
+  fitText();
+}
+window.onresize = fitText;
+
+render();
+verdict();
+syncClock();
+setTimeout(checkFonts, 500);
+</script>
+</body>
+</html>

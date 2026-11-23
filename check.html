@@ -133,9 +133,20 @@ function syncClock() {
 
 // --- JavaScript
 test('es5', function () { return window.JSON && JSON.parse('{"a":1}').a === 1 && [].forEach && Object.keys && Function.prototype.bind && ''.trim; });
-test('es6', function () { return new Function('const a = 1; let b = () => a; return `${b()}`;')() === '1'; });
-test('es6class', function () { return new Function('class A { m() { return 2; } } return new A().m();')() === 2; });
-test('es2017', function () { new Function('async function f() {} return f;'); return true; });
+// Sintaxe nova testada com <script> inline (não com eval/new Function, que a política de segurança do site bloqueia):
+// se o motor não perceber a sintaxe, o script falha e a variável não fica definida
+function syntax(id, code) {
+  try {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.text = 'try{window.__chk_' + id + '=(function(){' + code + '})();}catch(e){}';
+    document.getElementsByTagName('head')[0].appendChild(s);
+  } catch (e) {}
+  return yes(id, window['__chk_' + id] === true);
+}
+syntax('es6', 'const a = 1; let b = () => a; return `${b()}` === "1";');
+syntax('es6class', 'class A { m() { return 2; } } return new A().m() === 2;');
+syntax('es2017', 'async function f() {} return typeof f === "function";');
 test('usp', function () { return typeof URLSearchParams !== 'undefined' && new URLSearchParams('?a=1').get('a') === '1'; });
 test('pad', function () { return '1'.padStart && '1'.padStart(2, '0') === '01'; });
 test('promise', function () { return typeof Promise !== 'undefined'; });

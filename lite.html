@@ -8,7 +8,7 @@
   Versão leve para leitores de sinalética antigos (ex.: VITEC m9305, browser Ekioh).
   Só usa JavaScript ES3/ES5 (var, function), CSS 2.1 + border-radius, posições fixas
   (sem flexbox/grid), letra TTF em ficheiros pequenos e imagens PNG.
-  Parâmetros: ?layout=portrait|landscape  ?end=2026-11-27T23:59:59+01:00
+  Parâmetros: ?layout=portrait|landscape  ?end=2026-11-27T17:00:00+01:00
 -->
 <style type="text/css">
 @font-face{font-family:'AktivLite500';src:url('lite/aktiv-500.ttf') format('truetype')}
@@ -82,7 +82,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#
 </div>
 <script type="text/javascript">
 // Só ES3/ES5: sem const/let, setas, template literals, URLSearchParams, classList nem padStart.
-var END = Date.UTC(2026, 10, 27, 22, 59, 59); // 27 Nov. 2026, 23:59:59 em Luanda (UTC+1)
+var END = Date.UTC(2026, 10, 27, 16, 0, 0); // 27 Nov. 2026, 17:00 em Luanda (UTC+1)
 var offset = 0; // diferença entre a hora do servidor e o relógio do leitor (ms)
 
 function $(id) { return document.getElementById(id); }
@@ -101,7 +101,7 @@ function now() { return new Date().getTime() + offset; }
 // ?end=AAAA-MM-DDTHH:MM[:SS](Z|+HH:MM|-HH:MM), lido à mão porque browsers antigos não lêem datas ISO
 (function () {
   var e = param('end');
-  var m = e && /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(Z|([+-])(\d{2}):?(\d{2}))?$/.exec(e);
+  var m = e && /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(Z|([+\- ])(\d{2}):?(\d{2}))?$/.exec(e); // num URL o '+' chega como espaço
   if (!m) { return; }
   var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0));
   if (m[8]) { t -= (m[8] === '-' ? -1 : 1) * ((+m[9]) * 60 + (+m[10])) * 60000; }

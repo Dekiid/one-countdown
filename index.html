@@ -86,7 +86,7 @@ addEventListener('dblclick',()=>fsCan&&fsToggle());
 addEventListener('keydown',e=>{if((e.key==='f'||e.key==='F')&&fsCan)fsToggle();});
 let hideT;const wake=()=>{B.classList.add('mv');clearTimeout(hideT);hideT=setTimeout(()=>B.classList.remove('mv'),3000);};
 ['mousemove','touchstart','pointerdown'].forEach(e=>addEventListener(e,wake,{passive:true}));
-const q=new URLSearchParams(location.search), END=new Date(q.get('end')||'2026-11-27T23:59:59+01:00').getTime();
+const q=new URLSearchParams(location.search), END=new Date(q.get('end')||'2026-11-27T17:00:00+01:00').getTime();
 // painel de aeroporto: metades fixas (cima = novo, baixo = antigo) e duas abas que rodam sobre o eixo do meio
 const cur={};
 const half=(c,v,x)=>`<div class="hf ${c} ${x||''}"><span>${v}</span></div>`;
